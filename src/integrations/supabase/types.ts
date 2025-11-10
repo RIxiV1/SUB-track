@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      savings_history: {
+        Row: {
+          id: string
+          monthly_savings: number
+          saved_at: string
+          subscription_name: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          monthly_savings: number
+          saved_at?: string
+          subscription_name: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          monthly_savings?: number
+          saved_at?: string
+          subscription_name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           billing_cycle: string

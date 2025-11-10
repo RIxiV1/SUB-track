@@ -11,7 +11,9 @@ import AddSubscriptionDialog from "@/components/AddSubscriptionDialog";
 import EditSubscriptionDialog from "@/components/EditSubscriptionDialog";
 import SpendingInsights from "@/components/SpendingInsights";
 import ThemeToggle from "@/components/ThemeToggle";
+import SavingsTracker from "@/components/SavingsTracker";
 import confetti from "canvas-confetti";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export interface Subscription {
   id: string;
@@ -25,13 +27,26 @@ export interface Subscription {
 const Dashboard = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
-  const [loading, setLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingSubscription, setEditingSubscription] = useState<Subscription | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const { data: subscriptions = [], isLoading } = useQuery({
+    queryKey: ['subscriptions'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("subscriptions")
+        .select("*")
+        .order("next_renewal_date", { ascending: true });
+
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: !!session,
+  });
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -53,33 +68,11 @@ const Dashboard = () => {
       
       if (!session) {
         navigate("/auth");
-      } else {
-        loadSubscriptions();
       }
     });
 
     return () => subscription.unsubscribe();
   }, [navigate]);
-
-  const loadSubscriptions = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("subscriptions")
-        .select("*")
-        .order("next_renewal_date", { ascending: true });
-
-      if (error) throw error;
-      setSubscriptions(data || []);
-    } catch (error: any) {
-      toast({
-        title: "Oops!",
-        description: "Couldn't load your subscriptions. Try refreshing?",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -93,6 +86,25 @@ const Dashboard = () => {
   const handleDeleteSubscription = async (id: string) => {
     try {
       const deletedSub = subscriptions.find(sub => sub.id === id);
+      
+      if (!deletedSub) return;
+
+      const monthlySavings = deletedSub.billing_cycle === "yearly" 
+        ? deletedSub.cost / 12
+        : deletedSub.cost;
+
+      // Save to savings history
+      const { error: savingsError } = await supabase
+        .from("savings_history")
+        .insert({
+          subscription_name: deletedSub.name,
+          monthly_savings: monthlySavings,
+          user_id: user?.id,
+        });
+
+      if (savingsError) throw savingsError;
+
+      // Delete subscription
       const { error } = await supabase
         .from("subscriptions")
         .delete()
@@ -100,7 +112,9 @@ const Dashboard = () => {
 
       if (error) throw error;
 
-      setSubscriptions(subscriptions.filter(sub => sub.id !== id));
+      // Invalidate queries to refresh data
+      queryClient.invalidateQueries({ queryKey: ['subscriptions'] });
+      queryClient.invalidateQueries({ queryKey: ['savings'] });
       
       // Celebration confetti
       confetti({
@@ -110,13 +124,9 @@ const Dashboard = () => {
         colors: ["#FF6B9D", "#C084FC", "#60A5FA"],
       });
 
-      const monthlySavings = deletedSub?.billing_cycle === "yearly" 
-        ? (deletedSub.cost / 12).toFixed(2)
-        : deletedSub?.cost.toFixed(2);
-
       toast({
         title: "Period. You just saved money! 💸",
-        description: `That's $${monthlySavings}/mo back in your pocket. Slay!`,
+        description: `That's $${monthlySavings.toFixed(2)}/mo back in your pocket. Slay!`,
       });
     } catch (error: any) {
       toast({
@@ -132,7 +142,7 @@ const Dashboard = () => {
     setIsEditDialogOpen(true);
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-subtle">
         <p className="text-muted-foreground">Loading your subs...</p>
@@ -164,6 +174,11 @@ const Dashboard = () => {
 
         {/* Stats */}
         <DashboardStats subscriptions={subscriptions} />
+
+        {/* Savings Tracker */}
+        <div className="mt-8">
+          <SavingsTracker />
+        </div>
 
         {/* Spending Insights */}
         {subscriptions.length > 0 && (
@@ -216,14 +231,14 @@ const Dashboard = () => {
         <AddSubscriptionDialog
           open={isAddDialogOpen}
           onOpenChange={setIsAddDialogOpen}
-          onSuccess={loadSubscriptions}
+          onSuccess={() => queryClient.invalidateQueries({ queryKey: ['subscriptions'] })}
         />
 
         <EditSubscriptionDialog
           subscription={editingSubscription}
           open={isEditDialogOpen}
           onOpenChange={setIsEditDialogOpen}
-          onSuccess={loadSubscriptions}
+          onSuccess={() => queryClient.invalidateQueries({ queryKey: ['subscriptions'] })}
         />
       </div>
     </div>

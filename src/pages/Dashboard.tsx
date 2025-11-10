@@ -8,6 +8,10 @@ import { LogOut, Plus } from "lucide-react";
 import DashboardStats from "@/components/DashboardStats";
 import SubscriptionCard from "@/components/SubscriptionCard";
 import AddSubscriptionDialog from "@/components/AddSubscriptionDialog";
+import EditSubscriptionDialog from "@/components/EditSubscriptionDialog";
+import SpendingInsights from "@/components/SpendingInsights";
+import ThemeToggle from "@/components/ThemeToggle";
+import confetti from "canvas-confetti";
 
 export interface Subscription {
   id: string;
@@ -24,6 +28,8 @@ const Dashboard = () => {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingSubscription, setEditingSubscription] = useState<Subscription | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -86,6 +92,7 @@ const Dashboard = () => {
 
   const handleDeleteSubscription = async (id: string) => {
     try {
+      const deletedSub = subscriptions.find(sub => sub.id === id);
       const { error } = await supabase
         .from("subscriptions")
         .delete()
@@ -95,9 +102,21 @@ const Dashboard = () => {
 
       setSubscriptions(subscriptions.filter(sub => sub.id !== id));
       
+      // Celebration confetti
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ["#FF6B9D", "#C084FC", "#60A5FA"],
+      });
+
+      const monthlySavings = deletedSub?.billing_cycle === "yearly" 
+        ? (deletedSub.cost / 12).toFixed(2)
+        : deletedSub?.cost.toFixed(2);
+
       toast({
-        title: "In your savings era! 💸",
-        description: "That subscription is gone. Money saved!",
+        title: "Period. You just saved money! 💸",
+        description: `That's $${monthlySavings}/mo back in your pocket. Slay!`,
       });
     } catch (error: any) {
       toast({
@@ -106,6 +125,11 @@ const Dashboard = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const handleEditSubscription = (subscription: Subscription) => {
+    setEditingSubscription(subscription);
+    setIsEditDialogOpen(true);
   };
 
   if (loading) {
@@ -125,18 +149,28 @@ const Dashboard = () => {
             <h1 className="text-4xl font-bold mb-2">SubSentry 💸</h1>
             <p className="text-muted-foreground">Your fin-bestie keeping track</p>
           </div>
-          <Button 
-            variant="outline" 
-            onClick={handleLogout}
-            className="gap-2"
-          >
-            <LogOut className="w-4 h-4" />
-            Peace out
-          </Button>
+          <div className="flex gap-3">
+            <ThemeToggle />
+            <Button 
+              variant="outline" 
+              onClick={handleLogout}
+              className="gap-2"
+            >
+              <LogOut className="w-4 h-4" />
+              Peace out
+            </Button>
+          </div>
         </div>
 
         {/* Stats */}
         <DashboardStats subscriptions={subscriptions} />
+
+        {/* Spending Insights */}
+        {subscriptions.length > 0 && (
+          <div className="mt-8">
+            <SpendingInsights subscriptions={subscriptions} />
+          </div>
+        )}
 
         {/* Subscriptions List */}
         <div className="mt-8">
@@ -172,6 +206,7 @@ const Dashboard = () => {
                   key={subscription.id}
                   subscription={subscription}
                   onDelete={handleDeleteSubscription}
+                  onEdit={handleEditSubscription}
                 />
               ))}
             </div>
@@ -181,6 +216,13 @@ const Dashboard = () => {
         <AddSubscriptionDialog
           open={isAddDialogOpen}
           onOpenChange={setIsAddDialogOpen}
+          onSuccess={loadSubscriptions}
+        />
+
+        <EditSubscriptionDialog
+          subscription={editingSubscription}
+          open={isEditDialogOpen}
+          onOpenChange={setIsEditDialogOpen}
           onSuccess={loadSubscriptions}
         />
       </div>

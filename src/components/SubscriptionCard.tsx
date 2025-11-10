@@ -1,16 +1,17 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Trash2, Calendar } from "lucide-react";
+import { Trash2, Calendar, Edit } from "lucide-react";
 import { Subscription } from "@/pages/Dashboard";
 import { format, differenceInDays } from "date-fns";
 
 interface SubscriptionCardProps {
   subscription: Subscription;
   onDelete: (id: string) => void;
+  onEdit: (subscription: Subscription) => void;
 }
 
-const SubscriptionCard = ({ subscription, onDelete }: SubscriptionCardProps) => {
+const SubscriptionCard = ({ subscription, onDelete, onEdit }: SubscriptionCardProps) => {
   const getDaysUntilRenewal = () => {
     const today = new Date();
     const renewalDate = new Date(subscription.next_renewal_date);
@@ -36,14 +37,24 @@ const SubscriptionCard = ({ subscription, onDelete }: SubscriptionCardProps) => 
       <CardHeader className="pb-3">
         <div className="flex justify-between items-start">
           <CardTitle className="text-xl">{subscription.name}</CardTitle>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => onDelete(subscription.id)}
-            className="h-8 w-8 text-muted-foreground hover:text-destructive"
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onEdit(subscription)}
+              className="h-8 w-8 text-muted-foreground hover:text-primary"
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onDelete(subscription.id)}
+              className="h-8 w-8 text-muted-foreground hover:text-destructive"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </CardHeader>
       <CardContent>

@@ -15,6 +15,8 @@ const subscriptionSchema = z.object({
   billing_cycle: z.string(),
   next_renewal_date: z.string(),
   category: z.string(),
+  usage_frequency: z.string().optional(),
+  last_used_date: z.string().optional(),
 });
 
 interface EditSubscriptionDialogProps {
@@ -31,6 +33,8 @@ const EditSubscriptionDialog = ({ subscription, open, onOpenChange, onSuccess }:
     billing_cycle: "monthly",
     next_renewal_date: "",
     category: "Entertainment",
+    usage_frequency: "monthly",
+    last_used_date: "",
   });
   const { toast } = useToast();
 
@@ -42,6 +46,8 @@ const EditSubscriptionDialog = ({ subscription, open, onOpenChange, onSuccess }:
         billing_cycle: subscription.billing_cycle,
         next_renewal_date: subscription.next_renewal_date,
         category: subscription.category,
+        usage_frequency: subscription.usage_frequency || "monthly",
+        last_used_date: subscription.last_used_date || "",
       });
     }
   }, [subscription]);
@@ -56,6 +62,8 @@ const EditSubscriptionDialog = ({ subscription, open, onOpenChange, onSuccess }:
         billing_cycle: formData.billing_cycle,
         next_renewal_date: formData.next_renewal_date,
         category: formData.category,
+        usage_frequency: formData.usage_frequency || undefined,
+        last_used_date: formData.last_used_date || undefined,
       });
 
       const { error } = await supabase
@@ -66,6 +74,8 @@ const EditSubscriptionDialog = ({ subscription, open, onOpenChange, onSuccess }:
           billing_cycle: validatedData.billing_cycle,
           next_renewal_date: validatedData.next_renewal_date,
           category: validatedData.category,
+          usage_frequency: validatedData.usage_frequency || null,
+          last_used_date: validatedData.last_used_date || null,
         })
         .eq("id", subscription?.id);
 
@@ -156,6 +166,32 @@ const EditSubscriptionDialog = ({ subscription, open, onOpenChange, onSuccess }:
                 <SelectItem value="Other">Other</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="edit-usage">How often do you use it?</Label>
+            <Select value={formData.usage_frequency} onValueChange={(value) => setFormData({ ...formData, usage_frequency: value })}>
+              <SelectTrigger id="edit-usage">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="daily">Daily - can't live without it</SelectItem>
+                <SelectItem value="weekly">Weekly - pretty regular</SelectItem>
+                <SelectItem value="monthly">Monthly - occasional use</SelectItem>
+                <SelectItem value="rarely">Rarely - barely touch it</SelectItem>
+                <SelectItem value="never">Never - honestly forgot about it</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="edit-last-used">Last used (optional)</Label>
+            <Input
+              id="edit-last-used"
+              type="date"
+              value={formData.last_used_date}
+              onChange={(e) => setFormData({ ...formData, last_used_date: e.target.value })}
+            />
           </div>
 
           <Button type="submit" className="w-full bg-gradient-primary">

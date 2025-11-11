@@ -12,6 +12,8 @@ import EditSubscriptionDialog from "@/components/EditSubscriptionDialog";
 import SpendingInsights from "@/components/SpendingInsights";
 import ThemeToggle from "@/components/ThemeToggle";
 import SavingsTracker from "@/components/SavingsTracker";
+import BudgetAnalyzer from "@/components/BudgetAnalyzer";
+import BudgetSettings from "@/components/BudgetSettings";
 import confetti from "canvas-confetti";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -22,6 +24,8 @@ export interface Subscription {
   billing_cycle: string;
   next_renewal_date: string;
   category: string;
+  usage_frequency?: string;
+  last_used_date?: string;
 }
 
 const Dashboard = () => {
@@ -44,6 +48,24 @@ const Dashboard = () => {
 
       if (error) throw error;
       return data || [];
+    },
+    enabled: !!session,
+  });
+
+  const { data: userSettings } = useQuery({
+    queryKey: ['user-settings'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
+
+      const { data, error } = await supabase
+        .from("user_settings")
+        .select("*")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      return data;
     },
     enabled: !!session,
   });
@@ -174,6 +196,22 @@ const Dashboard = () => {
 
         {/* Stats */}
         <DashboardStats subscriptions={subscriptions} />
+
+        {/* Budget Settings */}
+        <div className="mt-8">
+          <BudgetSettings />
+        </div>
+
+        {/* Budget Analyzer */}
+        {userSettings && subscriptions.length > 0 && (
+          <div className="mt-8">
+            <BudgetAnalyzer 
+              subscriptions={subscriptions}
+              monthlyBudget={parseFloat(userSettings.monthly_budget.toString())}
+              onCancelRecommendation={handleDeleteSubscription}
+            />
+          </div>
+        )}
 
         {/* Savings Tracker */}
         <div className="mt-8">

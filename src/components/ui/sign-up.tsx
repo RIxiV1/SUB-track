@@ -247,13 +247,8 @@ export const AuthComponent = ({ logo = <DefaultLogo />, brandName = "EaseMize", 
     if (authStep === 'email') {
         if (isEmailValid) setAuthStep("password");
     } else if (authStep === 'password') {
-        if (isPasswordValid) {
-          if (isLogin) {
-            // For login, submit at password step
-            handleFinalSubmit(new Event('submit') as any);
-          } else {
-            setAuthStep("confirmPassword");
-          }
+        if (isPasswordValid && !isLogin) {
+          setAuthStep("confirmPassword");
         }
     }
   };
@@ -261,7 +256,15 @@ export const AuthComponent = ({ logo = <DefaultLogo />, brandName = "EaseMize", 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
         e.preventDefault();
-        handleProgressStep();
+        if (authStep === 'password' && isLogin && isPasswordValid) {
+          // For login at password step, submit form
+          const form = e.currentTarget.form;
+          if (form) {
+            form.requestSubmit();
+          }
+        } else {
+          handleProgressStep();
+        }
     }
   };
 
@@ -391,7 +394,7 @@ useEffect(() => {
                                                 {isPasswordValid ? <button type="button" aria-label="Toggle password visibility" onClick={() => setShowPassword(!showPassword)} className="text-foreground/80 hover:text-foreground transition-colors p-2 rounded-full">{showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}</button> : <Lock className="h-5 w-5 text-foreground/80 flex-shrink-0" />}
                                             </div>
                                             <input ref={passwordInputRef} type={showPassword ? "text" : "password"} placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={handleKeyDown} className="relative z-10 h-full w-0 flex-grow bg-transparent text-foreground placeholder:text-foreground/60 focus:outline-none" />
-                                            <div className={cn( "relative z-10 flex-shrink-0 overflow-hidden transition-all duration-300 ease-in-out", isPasswordValid ? "w-10 pr-1" : "w-0" )}><GlassButton type="button" onClick={handleProgressStep} size="icon" aria-label="Submit password" contentClassName="text-foreground/80 hover:text-foreground"><ArrowRight className="w-5 h-5" /></GlassButton></div>
+                                            <div className={cn( "relative z-10 flex-shrink-0 overflow-hidden transition-all duration-300 ease-in-out", isPasswordValid ? "w-10 pr-1" : "w-0" )}><GlassButton type={isLogin ? "submit" : "button"} onClick={!isLogin ? handleProgressStep : undefined} size="icon" aria-label="Submit password" contentClassName="text-foreground/80 hover:text-foreground"><ArrowRight className="w-5 h-5" /></GlassButton></div>
                                         </div></div>
                                     </div>
                                     <BlurFade inView delay={0.2}><button type="button" onClick={handleGoBack} className="mt-4 flex items-center gap-2 text-sm text-foreground/70 hover:text-foreground transition-colors"><ArrowLeft className="w-4 h-4" /> Go back</button></BlurFade>
@@ -410,7 +413,7 @@ useEffect(() => {
                                     <div className="relative z-10 flex-shrink-0 flex items-center justify-center w-10 pl-2">
                                         {isConfirmPasswordValid ? <button type="button" aria-label="Toggle confirm password visibility" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="text-foreground/80 hover:text-foreground transition-colors p-2 rounded-full">{showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}</button> : <Lock className="h-5 w-5 text-foreground/80 flex-shrink-0" />}
                                     </div>
-                                    <input ref={confirmPasswordInputRef} type={showConfirmPassword ? "text" : "password"} placeholder="Confirm Password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="relative z-10 h-full w-0 flex-grow bg-transparent text-foreground placeholder:text-foreground/60 focus:outline-none" />
+                                    <input ref={confirmPasswordInputRef} type={showConfirmPassword ? "text" : "password"} placeholder="Confirm Password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter' && isConfirmPasswordValid) { e.preventDefault(); e.currentTarget.form?.requestSubmit(); }}} className="relative z-10 h-full w-0 flex-grow bg-transparent text-foreground placeholder:text-foreground/60 focus:outline-none" />
                                     <div className={cn( "relative z-10 flex-shrink-0 overflow-hidden transition-all duration-300 ease-in-out", isConfirmPasswordValid ? "w-10 pr-1" : "w-0" )}><GlassButton type="submit" size="icon" aria-label="Finish sign-up" contentClassName="text-foreground/80 hover:text-foreground"><ArrowRight className="w-5 h-5" /></GlassButton></div>
                                 </div></div>
                             </div>

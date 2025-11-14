@@ -37,13 +37,12 @@ Routing: React Router
 Bet. You wanna run this yourself? Say less.
 
 1. Clone the repo:
-Bash
+
 
 git clone https://github.com/RIxiV1/sticky-loop-architect.git
 cd sticky-loop-architect
 
 2. Install packages: This project uses npm.
-Bash
 
 npm install
 
@@ -54,8 +53,6 @@ npm install
     Create a .env file in the root of this project. (Don't worry, it's in the .gitignore).
 
     Copy your Supabase project URL and anon key into it:
-
-Code snippet
 
 # .env file
 VITE_SUPABASE_URL="httpsYOUR_SUPABASE_PROJECT_URL.supabase.co"
@@ -70,7 +67,6 @@ VITE_SUPABASE_PUBLISHABLE_KEY="YOUR_SUPABASE_ANON_KEY"
     Paste it into the SQL editor and click "Run." This will create the subscriptions table and set up the Row Level Security policies.
 
 5. Run the dev server:
-Bash
 
 npm run dev
 

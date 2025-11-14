@@ -1,73 +1,81 @@
-# Welcome to your Lovable project
+SubSentry - Your Fin-Bestie 💸
 
-## Project info
+Stop letting subscriptions ghost your bank account. SubSentry is your financial bestie that helps you track and manage all your subscriptions with zero judgment.
 
-**URL**: https://lovable.dev/projects/3997163f-975c-47d4-b86c-85fcea8ee497
+This isn't just another mid subscription tracker. It's a "vibe-coded" app built from the ground up to transform financial anxiety into effortless, calm control.
 
-## How can I edit this code?
+✨ Features
 
-There are several ways of editing your application.
+    Secure AF: No bank linking. Ever. Your data stays your data, enforced at the database level with Supabase Row Level Security.
 
-**Use Lovable**
+The "Slay" Moment: We celebrate you for making smart moves. Cancel a sub? You get confetti and a "you just saved money" toast. Period.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/3997163f-975c-47d4-b86c-85fcea8ee497) and start prompting.
+Vibe-Coded UI: A custom, "no-stress" design system built with Tailwind. All colors, gradients, and shadows are designed to feel empowering, not alarming.
 
-Changes made via Lovable will be committed automatically to this repo.
+Zero Judgment: Add your subs, see the total, and get the full sitch. No shaming, just clarity.
 
-**Use your preferred IDE**
+Genz-First Copy: All validation and helper text is written to sound like a friend, not a robot.
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+🛠️ Tech Stack
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+This project is built with a modern, scalable stack:
 
-Follow these steps:
+    Framework: React + Vite 
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+Backend: Supabase (Auth & Postgres Database)
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+UI: shadcn/ui & Tailwind CSS
 
-# Step 3: Install the necessary dependencies.
-npm i
+Validation: Zod
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+That "Slay" Moment: canvas-confetti
+
+Routing: React Router
+
+🚀 How to Run Locally
+
+Bet. You wanna run this yourself? Say less.
+
+1. Clone the repo:
+Bash
+
+git clone https://github.com/RIxiV1/sticky-loop-architect.git
+cd sticky-loop-architect
+
+2. Install packages: This project uses npm.
+Bash
+
+npm install
+
+3. Set up your Environment: This project uses Supabase for the backend.
+
+    Create a new project on Supabase.com.
+
+    Create a .env file in the root of this project. (Don't worry, it's in the .gitignore).
+
+    Copy your Supabase project URL and anon key into it:
+
+Code snippet
+
+# .env file
+VITE_SUPABASE_URL="httpsYOUR_SUPABASE_PROJECT_URL.supabase.co"
+VITE_SUPABASE_PUBLISHABLE_KEY="YOUR_SUPABASE_ANON_KEY"
+
+4. Run the Database Migration:
+
+    In your Supabase project, go to the "SQL Editor."
+
+    Copy the contents of the migration file: supabase/migrations/20251109045834_b9c2b6ad-c4a0-4e21-ac9d-55b2f45357ca.sql.
+
+    Paste it into the SQL editor and click "Run." This will create the subscriptions table and set up the Row Level Security policies.
+
+5. Run the dev server:
+Bash
+
 npm run dev
-```
 
-**Edit a file directly in GitHub**
+Your fin-bestie is now running on http://localhost:8080!
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+📜 License
 
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/3997163f-975c-47d4-b86c-85fcea8ee497) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+This project is licensed under the MIT License. Feel free to use it and build on it.

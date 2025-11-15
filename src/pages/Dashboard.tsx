@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { User, Session } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { LogOut, Plus } from "lucide-react";
+import { Trash2, Plus, LogOut, Filter, TrendingUp } from "lucide-react";
 import DashboardStats from "@/components/DashboardStats";
 import SubscriptionCard from "@/components/SubscriptionCard";
 import AddSubscriptionDialog from "@/components/AddSubscriptionDialog";
@@ -262,6 +262,15 @@ const Dashboard = () => {
           <div className="flex items-center gap-3">
             <CommandPalette onAddSubscription={() => setIsAddDialogOpen(true)} onLogout={handleLogout} />
             <ThemeToggle />
+            <Button
+              variant="outline"
+              onClick={() => navigate("/insights")}
+              className="gap-2 hover:scale-105 transition-transform"
+              aria-label="View spending insights"
+            >
+              <TrendingUp className="w-4 h-4" />
+              <span className="hidden sm:inline">Insights</span>
+            </Button>
             <Button 
               variant="outline" 
               onClick={handleLogout}
